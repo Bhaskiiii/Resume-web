@@ -113,11 +113,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const API_URL = isLocal
         ? 'http://localhost:8000/api/contact'
-        : 'https://your-production-backend.com/api/contact';
+        : 'https://bhaskar-portfolio-backend.onrender.com/api/contact';
 
     const CHAT_API_URL = isLocal
         ? 'http://localhost:8000/api/chat'
-        : 'https://your-production-backend.com/api/chat';
+        : 'https://bhaskar-portfolio-backend.onrender.com/api/chat';
 
     // Navigation Highlighting
     const navItems = document.querySelectorAll('.nav-item');
