@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bhaskar Gowda | Portfolio</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- SEO & Social Media Meta Tags -->
+    <meta name="description"
+        content="Bhaskar Gowda A N - AIML Student and Full Stack Developer. Specialized in building AI-powered scalable systems.">
+    <meta name="keywords" content="Bhaskar Gowda, AIML, Developer, Portfolio, Software Engineering, AI, ML">
+    <meta property="og:title" content="Bhaskar Gowda | Portfolio">
+    <meta property="og:description"
+        content="Explore the portfolio of Bhaskar Gowda, an AIML student and developer building intelligent systems.">
+    <meta property="og:image" content="profile_photo.jpg">
+    <meta property="og:url" content="https://bhaskiiii.github.io/">
+    <meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="dark-mode">
+    <div class="container">
+        <!-- Left Section: Photo Section -->
+        <aside class="left-section">
+            <div class="photo-overlay"></div>
+            <div id="loader-wrapper">
+                <div class="loader"></div>
+                <span>Loading Motion...</span>
+            </div>
+            <canvas id="profile-canvas"></canvas>
+            <div class="photo-content">
+                <h1 class="photo-name">BHASKAR GOWDA A N</h1>
+                <p class="photo-tagline">AIML Student | Developer</p>
+            </div>
+            <div class="floating-socials">
+                <a href="https://www.linkedin.com/in/bhaskar-gowda-409a96332/" target="_blank"
+                    aria-label="LinkedIn Profile"><i class="fab fa-linkedin"></i></a>
+                <a href="https://github.com/Bhaskiiii" target="_blank" aria-label="GitHub Profile"><i
+                        class="fab fa-github"></i></a>
+                <a href="mailto:bhaskarnandakishore@gmail.com" aria-label="Email Me"><i class="fas fa-envelope"></i></a>
+            </div>
+        </aside>
+
+        <!-- Right Section: Content Section -->
+        <main class="right-section">
+            <canvas id="bg-canvas"></canvas>
+            <div class="bg-overlay"></div>
+            <nav class="nav-bar">
+                <div class="nav-links">
+                    <a href="#hero" class="nav-item active">Home</a>
+                    <a href="#about" class="nav-item">About</a>
+                    <a href="#skills" class="nav-item">Skills</a>
+                    <a href="#education" class="nav-item">Education</a>
+                    <a href="#projects" class="nav-item">Projects</a>
+                    <a href="#contact" class="nav-item">Contact</a>
+                </div>
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </nav>
+
+            <section id="hero" class="hero section">
+                <div class="hero-content">
+                    <h2 class="fade-up">Hello, I'm</h2>
+                    <h1 class="mega-title fade-up delay-1">Bhaskar Gowda A N</h1>
+                    <h3 class="role-subtitle fade-up delay-2">AIML Student & Full Stack Developer using AI</h3>
+                    <p class="hero-intro fade-up delay-3">Pioneering the intersection of Artificial Intelligence and
+                        Software Engineering. Dedicated to building scalable, intelligent systems that bridge
+                        complex
+                        data with intuitive user experiences.</p>
+                    <div class="hero-actions fade-up delay-4">
+                        <a href="#" class="btn primary" id="download-resume">Download Resume <i
+                                class="fas fa-download"></i></a>
+                        <a href="#contact" class="btn secondary">Get In Touch</a>
+                    </div>
+                </div>
+            </section>
+
+            <section id="about" class="about section">
+                <h2 class="section-title">About Me</h2>
+                <div class="glass-card">
+                    <div class="card-body">
+                        <p class="summary">I am a passionate AIML student with a strong technical foundation and a drive
+                            to build impactful software. I enjoy tackling complex problems and learning new technologies
+                            to stay at the forefront of the industry.</p>
+
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <h3>Career Objective</h3>
+                                <p>To leverage my expertise in AI/ML and software engineering to develop innovative
+                                    products that solve real-world challenges while working in a collaborative and
+                                    growth-oriented environment.</p>
+                            </div>
+                            <div class="info-item">
+                                <h3>Personal Strengths</h3>
+                                <ul class="strength-list">
+                                    <li><i class="fas fa-check-circle"></i> Quick Learner & Adaptable</li>
+                                    <li><i class="fas fa-check-circle"></i> Analytical Problem Solver</li>
+                                    <li><i class="fas fa-check-circle"></i> Effective Team Player</li>
+                                    <li><i class="fas fa-check-circle"></i> Detail Oriented</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="skills" class="skills section">
+                <h2 class="section-title">Skills & Expertise</h2>
+                <div class="skills-container">
+                    <div class="skill-group glass-card">
+                        <h3>Programming</h3>
+                        <div class="skill-bars">
+                            <div class="skill-bar">
+                                <div class="skill-info"><span>Python</span><span>90%</span></div>
+                                <div class="bar-bg">
+                                    <div class="bar-fill" style="width: 90%;"></div>
+                                </div>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-info"><span>C / C++</span><span>85%</span></div>
+                                <div class="bar-bg">
+                                    <div class="bar-fill" style="width: 85%;"></div>
+                                </div>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-info"><span>Java</span><span>75%</span></div>
+                                <div class="bar-bg">
+                                    <div class="bar-fill" style="width: 75%;"></div>
+                                </div>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-info"><span>SQL</span><span>80%</span></div>
+                                <div class="bar-bg">
+                                    <div class="bar-fill" style="width: 80%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="skill-group glass-card">
+                        <h3>Machine Learning & Data</h3>
+                        <div class="tool-tags">
+                            <span class="tag">TensorFlow</span>
+                            <span class="tag">PyTorch</span>
+                            <span class="tag">Scikit-learn</span>
+                            <span class="tag">Pandas / NumPy</span>
+                            <span class="tag">NLP (LSTMs, Transformers)</span>
+                            <span class="tag">Computer Vision</span>
+                            <span class="tag">SQL / MongoDB</span>
+                        </div>
+                    </div>
+
+                    <div class="skill-group glass-card">
+                        <h3>DevOps & Infrastructure</h3>
+                        <div class="tool-tags">
+                            <span class="tag">Docker</span>
+                            <span class="tag">Git & GitHub</span>
+                            <span class="tag">FastAPI / Flask</span>
+                            <span class="tag">Cloud (AWS/GCP)</span>
+                            <span class="tag">CI/CD Pipelines</span>
+                            <span class="tag">Postman</span>
+                            <span class="tag">VS Code</span>
+                        </div>
+                    </div>
+
+                    <div class="skill-group glass-card">
+                        <h3>Soft Skills</h3>
+                        <div class="soft-skills-grid">
+                            <div class="soft-skill"><i class="fas fa-comments"></i> <span>Communication</span></div>
+                            <div class="soft-skill"><i class="fas fa-users"></i> <span>Leadership</span></div>
+                            <div class="soft-skill"><i class="fas fa-clock"></i> <span>Time Management</span></div>
+                            <div class="soft-skill"><i class="fas fa-lightbulb"></i> <span>Creativity</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="education" class="education section">
+                <h2 class="section-title">Education</h2>
+                <div class="education-timeline">
+                    <!-- B.E. -->
+                    <div class="timeline-item glass-card">
+                        <div class="timeline-header">
+                            <span class="duration">2024 – 2028 (Expected)</span>
+                            <h3>B.E. in Computer Science (AIML)</h3>
+                        </div>
+                        <p class="college">The National Institute of Engineering, Mysuru</p>
+                    </div>
+
+                    <!-- PU -->
+                    <div class="timeline-item glass-card">
+                        <div class="timeline-header">
+                            <span class="duration">2022 – 2024</span>
+                            <h3>Pre-University (11th – 12th)</h3>
+                        </div>
+                        <p class="college">BGS PU College, Mysuru</p>
+                    </div>
+
+                    <!-- SSLC -->
+                    <div class="timeline-item glass-card">
+                        <div class="timeline-header">
+                            <span class="duration">2019 – 2022</span>
+                            <h3>SSLC (8th – 10th)</h3>
+                        </div>
+                        <p class="college">Podar International School, Hassan</p>
+                    </div>
+
+                    <!-- 2nd - 7th -->
+                    <div class="timeline-item glass-card">
+                        <div class="timeline-header">
+                            <span class="duration">2012 – 2018</span>
+                            <h3>2nd – 7th Grade</h3>
+                        </div>
+                        <p class="college">Hassan Public School, Hassan</p>
+                    </div>
+
+                    <!-- 1st -->
+                    <div class="timeline-item glass-card">
+                        <div class="timeline-header">
+                            <span class="duration">2011 – 2012</span>
+                            <h3>1st Grade</h3>
+                        </div>
+                        <p class="college">Christa Jyothi School, Arkalgud</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="projects" class="projects section">
+                <h2 class="section-title">Projects</h2>
+                <div class="projects-grid">
+                    <div class="project-card glass-card">
+                        <div class="project-header">
+                            <h3>Sentiment-Pulse AI</h3>
+                            <div class="project-links">
+                                <a href="https://github.com/Bhaskiiii" title="View GitHub" target="_blank"><i
+                                        class="fab fa-github"></i></a>
+                            </div>
+                        </div>
+                        <p>Architected a high-throughput sentiment analysis engine for volatile stock news. Achieved 92%
+                            accuracy using LSTM architectures and custom Selenium data scrapers.</p>
+                        <div class="project-tech">
+                            <span>Deep Learning</span><span>Selenium</span><span>Python</span>
+                        </div>
+                    </div>
+                    <div class="project-card glass-card">
+                        <div class="project-header">
+                            <h3>VisionGate Attendance</h3>
+                            <div class="project-links">
+                                <a href="https://github.com/Bhaskiiii" title="View GitHub" target="_blank"><i
+                                        class="fab fa-github"></i></a>
+                            </div>
+                        </div>
+                        <p>Developed a secure facial recognition system for enterprise attendance tracking. Implemented
+                            One-Shot learning with FaceNet to minimize registration friction.</p>
+                        <div class="project-tech">
+                            <span>OpenCV</span><span>Deep Learning</span><span>SQLite</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="experience" class="experience section">
+                <h2 class="section-title">Experience / Internships</h2>
+                <div class="experience-list">
+                    <div class="experience-item glass-card">
+                        <div class="exp-header">
+                            <div class="exp-title">
+                                <h3>AIML Intern</h3>
+                                <p class="company">TechCorp Solutions</p>
+                            </div>
+                            <span class="exp-date">June 2023 - Aug 2023</span>
+                        </div>
+                        <ul class="exp-tasks">
+                            <li>Worked on optimizing data preprocessing pipelines for large-scale datasets.</li>
+                            <li>Implemented baseline ML models for customer churn prediction.</li>
+                            <li>Collaborated with the data science team to visualize model performance.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="contact" class="contact section">
+                <h2 class="section-title">Get In Touch</h2>
+                <div class="contact-layout">
+                    <div class="contact-details glass-card">
+                        <div class="detail-item">
+                            <i class="fas fa-phone"></i>
+                            <div>
+                                <h4>Phone</h4>
+                                <p>+91 7975685397</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <h4>Email</h4>
+                                <p>bhaskarnandakishore@gmail.com</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fab fa-linkedin"></i>
+                            <div>
+                                <h4>LinkedIn</h4>
+                                <p>linkedin.com/in/bhaskar-gowda-409a96332/</p>
+                            </div>
+                        </div>
+                    </div>
+                    <form id="contact-form" class="contact-form glass-card">
+                        <div class="form-group">
+                            <input type="text" id="name" placeholder="Your Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="email" placeholder="Your Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" id="phone" placeholder="Your Phone Number">
+                        </div>
+                        <div class="form-group">
+                            <textarea id="message" placeholder="Your Message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn primary full-width">Send Message</button>
+                    </form>
+                </div>
+            </section>
+
+            <footer class="footer">
+                <p>&copy; 2024 Bhaskar Gowda A N. All rights reserved.</p>
+            </footer>
+        </main>
+    </div>
+    <button id="back-to-top" class="back-to-top" aria-label="Back to Top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+    <!-- AI Chatbot Widget -->
+    <div id="chatbot-widget" class="chatbot-widget">
+        <div id="chat-bubble" class="chat-bubble" aria-label="Open Chat">
+            <i class="fas fa-comment-dots"></i>
+        </div>
+
+        <div id="chat-container" class="chat-container glass-card">
+            <div class="chat-header">
+                <div class="header-info">
+                    <div class="bot-avatar">
+                        <i class="fas fa-robot"></i>
+                        <span class="online-status"></span>
+                    </div>
+                    <div>
+                        <h4>Bhaskar's AI</h4>
+                        <p>Ask me anything!</p>
+                    </div>
+                </div>
+                <button id="close-chat" class="close-chat"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div id="chat-messages" class="chat-messages">
+                <div class="message bot">
+                    <div class="message-content">
+                        Hello! I'm Bhaskar's AI Assistant. How can I help you today?
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-suggestions">
+                <button class="suggestion-btn">What are his skills?</button>
+                <button class="suggestion-btn">View his projects</button>
+                <button class="suggestion-btn">How to contact him?</button>
+            </div>
+
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Type a message..." autocomplete="off">
+                <button id="send-chat" class="send-chat"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js?v=1.1"></script>
+</body>
+
+</html>

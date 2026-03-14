@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+motor
+pydantic[email]
+python-dotenv
+slowapi
+python-multipart
+aiosqlite
+google-generativeai
