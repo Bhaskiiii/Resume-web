@@ -3,7 +3,8 @@ import traceback
 import aiosqlite
 import json
 import anyio
-import google.generativeai as genai
+from contextlib import asynccontextmanager
+from google import genai
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,7 +28,18 @@ class ChatRequest(BaseModel):
 # Load environment variables
 load_dotenv()
 
-app = FastAPI(title="Bhaskar Gowda Portfolio Backend")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Initialize SQLite
+    await init_sqlite()
+    yield
+    # Shutdown: Clean up resources if any
+    pass
+
+app = FastAPI(
+    title="Bhaskar Gowda Portfolio Backend",
+    lifespan=lifespan
+)
 
 # Rate limiting
 limiter = Limiter(key_func=get_remote_address)
@@ -57,9 +69,7 @@ async def init_sqlite():
         """)
         await db.commit()
 
-@app.on_event("startup")
-async def startup_event():
-    await init_sqlite()
+# (Startup tasks moved to lifespan)
 
 # MongoDB Connection
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
@@ -102,10 +112,17 @@ Submitted at: {timestamp}
         msg.attach(MIMEText(body, 'plain'))
 
         def send_sync():
-            with smtplib.SMTP(smtp_host, smtp_port, timeout=30) as server:
-                server.starttls()
-                server.login(smtp_user, smtp_pass)
-                server.send_message(msg)
+            # Use SSL (Port 465) for better compatibility on Render
+            if smtp_port == 465:
+                with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=30) as server:
+                    server.login(smtp_user, smtp_pass)
+                    server.send_message(msg)
+            else:
+                # Fallback to TLS (Port 587)
+                with smtplib.SMTP(smtp_host, smtp_port, timeout=30) as server:
+                    server.starttls()
+                    server.login(smtp_user, smtp_pass)
+                    server.send_message(msg)
             return True
 
         print(f"DEBUG: Attempting to send email to {notify_email}...")
@@ -208,8 +225,9 @@ async def health_check():
 
 # Gemini Chat Setup
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+client = None
 if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+    client = genai.Client(api_key=GEMINI_API_KEY)
 
 BHASKAR_SYSTEM_PROMPT = """
 You are "Bhaskar's AI Assistant", a friendly, professional, and concise representative for Bhaskar Gowda A N.
@@ -252,19 +270,20 @@ GUIDELINES:
 @app.post("/api/chat")
 @limiter.limit("10/minute")
 async def chat_with_assistant(request: Request, chat_req: ChatRequest):
-    if not GEMINI_API_KEY:
+    if not client:
         return {"response": "I'm currently in 'offline' mode as my AI brain (API Key) isn't configured yet. Please contact Bhaskar at bhaskarnandakishore@gmail.com for questions!"}
 
     try:
-        model_name = 'models/gemini-2.5-flash-lite'
-        model = genai.GenerativeModel(model_name, system_instruction=BHASKAR_SYSTEM_PROMPT)
-        response = await anyio.to_thread.run_sync(lambda: model.generate_content(chat_req.message))
+        model_id = 'gemini-2.0-flash' # Using a supported model ID for the new SDK
+        response = client.models.generate_content(
+            model=model_id,
+            contents=chat_req.message,
+            config={'system_instruction': BHASKAR_SYSTEM_PROMPT}
+        )
         return {"response": response.text}
     except Exception as e:
         error_msg = str(e)
         if "429" in error_msg or "quota" in error_msg.lower():
-            return {"response": f"Quota reached for {model_name}. Please try again later or contact Bhaskar directly."}
-        if "404" in error_msg:
-            return {"response": f"AI model {model_name} not found. I'm working on a fix!"}
+            return {"response": f"Quota reached for {model_id}. Please try again later."}
         print(f"Chat Error: {e}")
         return {"response": f"Technical issue: {error_msg[:100]}..."}

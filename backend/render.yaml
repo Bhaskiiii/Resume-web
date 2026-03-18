@@ -3,12 +3,12 @@ services:
     name: bhaskar-portfolio-backend
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port 10000
     envVars:
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT
-        sync: false
+        value: "465"
       - key: SMTP_USER
         sync: false
       - key: SMTP_PASSWORD

@@ -6,4 +6,4 @@ python-dotenv
 slowapi
 python-multipart
 aiosqlite
-google-generativeai
+google-genai
