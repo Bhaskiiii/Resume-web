@@ -3,7 +3,7 @@ import aiosqlite
 import json
 import anyio
 import google.generativeai as genai
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -101,7 +101,7 @@ Submitted at: {timestamp}
         msg.attach(MIMEText(body, 'plain'))
 
         def send_sync():
-            with smtplib.SMTP(smtp_host, smtp_port) as server:
+            with smtplib.SMTP(smtp_host, smtp_port, timeout=30) as server:
                 server.starttls()
                 server.login(smtp_user, smtp_pass)
                 server.send_message(msg)
@@ -118,7 +118,7 @@ Submitted at: {timestamp}
 
 @app.post("/api/contact", status_code=201)
 @limiter.limit("5/minute")
-async def create_submission(request: Request, submission: SubmissionCreate):
+async def create_submission(request: Request, submission: SubmissionCreate, background_tasks: BackgroundTasks):
     try:
         # Prepare data with timestamp
         print(f"DEBUG: Received submission: {submission}")
@@ -143,12 +143,12 @@ async def create_submission(request: Request, submission: SubmissionCreate):
                 cursor = await sqlite_db.execute("SELECT last_insert_rowid()")
                 submission_id = f"sqlite_{ (await cursor.fetchone())[0] }"
         
-        # Email Notification
-        email_sent = await send_email_notification(submission)
+        # Email Notification (Background)
+        background_tasks.add_task(send_email_notification, submission)
         
         return {
             "status": "success", 
-            "message": "Submission received and notified" if email_sent else "Submission received (notification pending config)", 
+            "message": "Submission received! We will notify the owner.", 
             "id": submission_id
         }
         

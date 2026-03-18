@@ -107,20 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Backend API Configuration ---
-    const isLocal = false; 
-    /*
-    const isLocal = window.location.hostname === 'localhost' ||
-        window.location.hostname === '127.0.0.1' ||
-        window.location.hostname === ''; // Handle file:// protocol
-    */
-
-    const API_URL = isLocal
-        ? 'http://localhost:8000/api/contact'
-        : 'https://resume-web-4.onrender.com/api/contact';
-
-    const CHAT_API_URL = isLocal
-        ? 'http://localhost:8000/api/chat'
-        : 'https://resume-web-4.onrender.com/api/chat';
+    const API_URL = 'https://resume-web-4.onrender.com/api/contact';
+    const CHAT_API_URL = 'https://resume-web-4.onrender.com/api/chat';
 
     // Navigation Highlighting
     const navItems = document.querySelectorAll('.nav-item');
