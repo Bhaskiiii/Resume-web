@@ -55,14 +55,13 @@ SQLITE_DB = os.path.join(BASE_DIR, "submissions.db")
 class Database:
     client: AsyncIOMotorClient = None
     db = None
+    contacts_collection = None
+    chats_collection = None
 
 db_instance = Database()
 
 async def init_sqlite():
     async with aiosqlite.connect(SQLITE_DB) as db:
-        # For simplicity in this upgrade, we ensure the new schema exists.
-        # In a real production migration, we would use ALTER TABLE.
-        await db.execute("DROP TABLE IF EXISTS submissions") 
         await db.execute("""
             CREATE TABLE IF NOT EXISTS submissions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -77,13 +76,27 @@ async def init_sqlite():
 async def lifespan(app: FastAPI):
     # Startup
     await init_sqlite()
-    mongo_url = os.getenv("MONGO_URL")
-    if mongo_url:
-        print(f"Connecting to MongoDB...")
-        db_instance.client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
-        db_instance.db = db_instance.client[os.getenv("DB_NAME", "portfolio_db")]
+    # Check for MONGO_URL or MONGODB_URI (Render default)
+    MONGO_URL = os.getenv("MONGO_URL") or os.getenv("MONGODB_URI")
+    
+    if MONGO_URL:
+        try:
+            db_instance.client = AsyncIOMotorClient(MONGO_URL, serverSelectionTimeoutMS=5000)
+            # Use database from connection string
+            # If default db name is not in URL, this might fail, so we fallback to a default
+            try:
+                db_instance.db = db_instance.client.get_default_database()
+            except Exception:
+                db_instance.db = db_instance.client[os.getenv("DB_NAME", "portfolio_db")]
+            
+            db_instance.contacts_collection = db_instance.db["contacts"]
+            db_instance.chats_collection = db_instance.db["chat_history"]
+            print("✅ Connected to MongoDB Atlas")
+        except Exception as e:
+            print(f"❌ Failed to connect to MongoDB Atlas: {e}")
+            print("⚠️ Falling back to SQLite")
     else:
-        print("MONGO_URL not set, using SQLite fallback exclusively.")
+        print("⚠️ MONGO_URL/MONGODB_URI not found, fallback to SQLite")
     
     yield
     # Shutdown
@@ -185,10 +198,11 @@ async def contact_form(form: ContactForm, background_tasks: BackgroundTasks):
         
         # Try MongoDB
         saved_to_mongo = False
-        if db_instance.db:
+        if db_instance.contacts_collection is not None:
             try:
-                await db_instance.db.contacts.insert_one(data)
+                await db_instance.contacts_collection.insert_one(data)
                 saved_to_mongo = True
+                print("✅ Saved contact to MongoDB")
             except Exception as e:
                 print(f"MongoDB save failed: {e}")
 
@@ -199,6 +213,8 @@ async def contact_form(form: ContactForm, background_tasks: BackgroundTasks):
                 ("contact", json.dumps(data, default=str), data["created_at"].isoformat())
             )
             await db.commit()
+            if not saved_to_mongo:
+                print("Saved contact to SQLite fallback")
         
         background_tasks.add_task(send_email_notification, form)
         return {"status": "success", "mongo": saved_to_mongo}
@@ -211,16 +227,17 @@ async def chat(req: ChatRequest):
         return {"response": "AI is offline. Please contact Bhaskar directly."}
     
     try:
-        model = genai.GenerativeModel(model_name='gemini-flash-latest', system_instruction=BHASKAR_SYSTEM_PROMPT)
+        model = genai.GenerativeModel(model_name='gemini-1.5-flash', system_instruction=BHASKAR_SYSTEM_PROMPT)
         response = model.generate_content(req.message)
         bot_reply = response.text
         
         chat_data = {"user_message": req.message, "bot_reply": bot_reply, "timestamp": datetime.utcnow()}
         
         # Try MongoDB
-        if db_instance.db:
+        if db_instance.chats_collection is not None:
             try:
-                await db_instance.db.chat_history.insert_one(chat_data)
+                await db_instance.chats_collection.insert_one(chat_data)
+                print("✅ Saved chat to MongoDB")
             except Exception as e:
                 print(f"MongoDB chat save failed: {e}")
 
@@ -243,9 +260,9 @@ async def chat(req: ChatRequest):
 async def get_messages(current_user: str = Depends(get_current_admin)):
     results = []
     # Try MongoDB
-    if db_instance.db:
+    if db_instance.contacts_collection is not None:
         try:
-            cursor = db_instance.db.contacts.find().sort("created_at", -1)
+            cursor = db_instance.contacts_collection.find().sort("created_at", -1)
             results = await cursor.to_list(length=100)
             for m in results: m["_id"] = str(m["_id"])
             return results
@@ -263,9 +280,9 @@ async def get_messages(current_user: str = Depends(get_current_admin)):
 async def get_chats(current_user: str = Depends(get_current_admin)):
     results = []
     # Try MongoDB
-    if db_instance.db:
+    if db_instance.chats_collection is not None:
         try:
-            cursor = db_instance.db.chat_history.find().sort("timestamp", -1)
+            cursor = db_instance.chats_collection.find().sort("timestamp", -1)
             results = await cursor.to_list(length=100)
             for c in results: c["_id"] = str(c["_id"])
             return results
