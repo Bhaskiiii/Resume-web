@@ -12,7 +12,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr
 from dotenv import load_dotenv
-from google import genai
+import google.generativeai as genai
 from jose import JWTError, jwt
 import smtplib
 from email.mime.text import MIMEText
@@ -96,11 +96,49 @@ async def get_current_admin(token: str = Depends(oauth2_scheme)):
 
 # --- AI & Email Helpers ---
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
+
+BHASKAR_SYSTEM_PROMPT = """
+You are "Bhaskar's AI Assistant", representing Bhaskar Gowda A N (AIML Student & Full Stack Developer).
+Keep responses concise, professional, and friendly.
+Skills: Python, C++, ML/AI (TensorFlow, PyTorch), Web (FastAPI, React).
+Projects: Sentiment-Pulse AI, VisionGate Attendance.
+Contact: bhaskarnandakishore@gmail.com | +91 7975685397
+"""
 
 async def send_email_notification(form: ContactForm):
-    # (Email logic remains the same)
-    pass
+    smtp_host = os.getenv("SMTP_HOST")
+    smtp_port = int(os.getenv("SMTP_PORT", 465))
+    smtp_user = os.getenv("SMTP_USER")
+    smtp_pass = os.getenv("SMTP_PASSWORD")
+    notify_email = os.getenv("NOTIFY_EMAIL")
+
+    if not all([smtp_host, smtp_user, smtp_pass, notify_email]):
+        print("SMTP config missing")
+        return
+
+    msg = MIMEMultipart()
+    msg['From'] = smtp_user
+    msg['To'] = notify_email
+    msg['Subject'] = f"New Message from {form.name}"
+    
+    body = f"Name: {form.name}\nEmail: {form.email}\nPhone: {form.phone}\n\nMessage:\n{form.message}"
+    msg.attach(MIMEText(body, 'plain'))
+
+    try:
+        if smtp_port == 465:
+            with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10) as server:
+                server.login(smtp_user, smtp_pass)
+                server.send_message(msg)
+        else:
+            with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
+                server.starttls()
+                server.login(smtp_user, smtp_pass)
+                server.send_message(msg)
+        print("Email sent successfully")
+    except Exception as e:
+        print(f"Email failed: {e}")
 
 # --- Routes ---
 
@@ -122,13 +160,26 @@ async def contact_form(form: ContactForm, background_tasks: BackgroundTasks):
 
 @app.post("/api/chat")
 async def chat(req: ChatRequest):
-    if not client: return {"response": "Offline"}
-    response = client.models.generate_content(model='gemini-2.0-flash', contents=req.message)
-    bot_reply = response.text
-    await db_instance.db.chat_history.insert_one({
-        "user_message": req.message, "bot_reply": bot_reply, "timestamp": datetime.utcnow()
-    })
-    return {"response": bot_reply}
+    if not GEMINI_API_KEY: 
+        return {"response": "I'm currently in 'offline' mode. Please contact Bhaskar directly!"}
+    
+    try:
+        model = genai.GenerativeModel(
+            model_name='gemini-1.5-flash-latest',
+            system_instruction=BHASKAR_SYSTEM_PROMPT
+        )
+        response = model.generate_content(req.message)
+        bot_reply = response.text
+        
+        await db_instance.db.chat_history.insert_one({
+            "user_message": req.message, 
+            "bot_reply": bot_reply, 
+            "timestamp": datetime.utcnow()
+        })
+        return {"response": bot_reply}
+    except Exception as e:
+        print(f"Chat error: {e}")
+        return {"response": "Technical issue with AI. Please try again later."}
 
 # --- Protected Admin Routes ---
 

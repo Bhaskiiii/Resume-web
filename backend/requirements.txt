@@ -6,3 +6,4 @@ pydantic[email]
 python-jose[cryptography]
 python-multipart
 slowapi
+google-generativeai
