@@ -1,4 +1,5 @@
 import os
+import traceback
 import aiosqlite
 import json
 import anyio
@@ -113,7 +114,10 @@ Submitted at: {timestamp}
         print(f"SUCCESS: Email notification sent to {notify_email}")
         return True
     except Exception as e:
-        print(f"ERROR: FAILED to send email notification: {e}")
+        print(f"ERROR: FAILED to send email notification.")
+        print(f"Error Type: {type(e).__name__}")
+        print(f"Error Message: {e}")
+        traceback.print_exc()
         return False
 
 @app.post("/api/contact", status_code=201)
