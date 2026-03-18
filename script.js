@@ -310,12 +310,30 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     // --- Scroll-Driven Profile Animation ---
     const canvas = document.getElementById('profile-canvas');
-    if (canvas) {
+    const loader = document.getElementById('loader-wrapper');
+
+    // MOBILE GUARD: Skip heavy canvas animation on small screens
+    if (window.innerWidth <= 992) {
+        // Hide loader and canvas immediately on mobile
+        if (loader) {
+            loader.style.display = 'none';
+        }
+        if (canvas) {
+            canvas.style.display = 'none';
+        }
+    } else if (canvas) {
         const context = canvas.getContext('2d');
-        const loader = document.getElementById('loader-wrapper');
         const frameCount = 121;
         const frames = [];
         let imagesLoaded = 0;
+
+        // Safety timeout: never block content for more than 3 seconds
+        setTimeout(() => {
+            if (loader && loader.style.display !== 'none') {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 500);
+            }
+        }, 3000);
 
         // Configuration
         const currentFrame = index => (
@@ -330,9 +348,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 imagesLoaded++;
                 if (imagesLoaded === frameCount) {
                     // Hide loader after all images are ready
+                    if (loader) {
+                        loader.style.opacity = '0';
+                        setTimeout(() => loader.style.display = 'none', 500);
+                    }
+                    render(); // Initial render
+                }
+            };
+            img.onerror = () => {
+                imagesLoaded++;
+                if (imagesLoaded === frameCount && loader) {
                     loader.style.opacity = '0';
                     setTimeout(() => loader.style.display = 'none', 500);
-                    render(); // Initial render
                 }
             };
             frames.push(img);
@@ -385,7 +412,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Scroll-Driven Background Animation (Right Panel) ---
     const bgCanvas = document.getElementById('bg-canvas');
-    if (bgCanvas) {
+
+    // MOBILE GUARD: Completely skip background frame preloading on small screens
+    if (bgCanvas && window.innerWidth > 992) {
         const bgContext = bgCanvas.getContext('2d');
         const bgFrameCount = 288;
         const bgFrames = [];
@@ -395,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `assets/background_frames/ezgif-frame-${index.toString().padStart(3, '0')}.jpg`
         );
 
-        // Preload background images
+        // Preload background images (desktop only)
         for (let i = 1; i <= bgFrameCount; i++) {
             const img = new Image();
             img.src = currentBgFrame(i);
@@ -415,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const renderBg = () => {
-            if (window.innerWidth <= 992) return; // MOBILE FALLBACK: Skip background animation on small screens
+            if (window.innerWidth <= 992) return;
 
             const html = document.documentElement;
             const progress = html.scrollTop / (html.scrollHeight - html.clientHeight);
@@ -460,10 +489,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         window.addEventListener('resize', debounce(() => {
             setBgCanvasSize();
-            // Also trigger profile resize if needed
-            if (canvas) setCanvasSize();
         }, 100));
 
         setBgCanvasSize();
+    } else if (bgCanvas) {
+        // Hide bg-canvas on mobile
+        bgCanvas.style.display = 'none';
     }
 });

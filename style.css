@@ -455,139 +455,6 @@ h3 {
     }
 }
 
-/* Mobile Screens */
-@media (max-width: 767px) {
-    .container {
-        flex-direction: column;
-        overflow-x: hidden;
-    }
-
-    .left-section {
-        width: 100%;
-        height: 60vh;
-        position: relative;
-        padding: 2rem 1rem;
-        justify-content: center;
-        /* Center hero content */
-    }
-
-    .right-section {
-        width: 100%;
-        padding: 3rem 1.2rem;
-        box-sizing: border-box;
-    }
-
-    #bg-canvas {
-        display: none;
-    }
-
-    .bg-overlay {
-        width: 100%;
-        left: 0;
-        height: 100%;
-        position: fixed;
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-    }
-
-    .nav-bar {
-        position: fixed;
-        bottom: 0px;
-        left: 0;
-        width: 100%;
-        height: auto;
-        min-height: 60px;
-        background: rgba(15, 23, 42, 0.95);
-        backdrop-filter: blur(20px);
-        margin-bottom: 0;
-        padding: 0.8rem 1rem;
-        border-top: 1px solid var(--glass-border);
-        justify-content: center;
-        border-radius: 20px 20px 0 0;
-        z-index: 2000;
-        /* High z-index to stay on top but not cover content */
-    }
-
-    .nav-links {
-        gap: 1.2rem;
-        display: flex;
-        justify-content: center;
-        width: 100%;
-    }
-
-    .nav-item {
-        font-size: 0.75rem;
-    }
-
-    .theme-toggle {
-        display: none;
-    }
-
-    .footer {
-        padding-bottom: 8rem;
-        /* Increased padding to clear fixed nav and chatbot toggle */
-    }
-
-    /* Education Timeline for Mobile */
-    .education-timeline {
-        padding-left: 0;
-    }
-
-    .education-timeline::before {
-        display: none;
-    }
-
-    .timeline-item {
-        margin-bottom: 1.5rem;
-        padding: 1.5rem !important;
-    }
-
-    .timeline-header h3 {
-        font-size: 1.4rem;
-    }
-
-    .duration {
-        font-size: 0.8rem;
-    }
-}
-
-/* Small Phones */
-@media (max-width: 480px) {
-    .left-section {
-        height: 50vh;
-    }
-
-    .mega-title {
-        font-size: 1.8rem;
-        /* Further reduced for SE to keep one line */
-    }
-
-    .right-section {
-        padding: 2.5rem 1rem;
-    }
-
-    .nav-links {
-        gap: 0.8rem;
-    }
-
-    .nav-item {
-        font-size: 0.7rem;
-    }
-
-    .hero-actions {
-        flex-direction: column;
-        gap: 0.8rem;
-    }
-
-    .btn {
-        width: 100%;
-        text-align: center;
-    }
-
-    .soft-skills-grid {
-        grid-template-columns: 1fr;
-    }
-}
 
 /* Fixes for mobile scroll issues */
 @media (pointer: coarse) {
@@ -926,55 +793,7 @@ h3 {
 }
 
 /* Mobile Responsive */
-@media (max-width: 992px) {
-    .container {
-        flex-direction: column;
-    }
 
-    .left-section {
-        width: 100%;
-        height: 60vh;
-        position: relative;
-    }
-
-    .right-section {
-        width: 100%;
-        padding: 2rem;
-    }
-
-    .mega-title {
-        font-size: 3rem;
-    }
-
-    .contact-layout {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 600px) {
-    .nav-bar {
-        padding: 0.5rem;
-    }
-
-    .nav-links {
-        gap: 0.8rem;
-    }
-
-    .mega-title {
-        font-size: 2.2rem;
-    }
-
-    .btn {
-        width: 100%;
-        margin: 0.5rem 0;
-        text-align: center;
-        justify-content: center;
-    }
-
-    .btn.secondary {
-        margin-left: 0;
-    }
-}
 
 /* Print Styles for Resume Export */
 @media print {
@@ -1078,14 +897,7 @@ h3 {
     box-shadow: 0 6px 16px rgba(99, 102, 241, 0.6);
 }
 
-@media (max-width: 767px) {
-    .back-to-top {
-        bottom: 90px;
-        right: 20px;
-        width: 45px;
-        height: 45px;
-    }
-}
+
 
 /* AI Chatbot Widget Styles */
 .chatbot-widget {
@@ -1319,17 +1131,162 @@ h3 {
     50% { transform: translateY(-5px); }
 }
 
-@media (max-width: 480px) {
+/* Consolidated Responsive Overrides */
+
+/* Tablet & Smaller */
+@media (max-width: 992px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .left-section {
+        width: 100%;
+        min-height: 50vh;
+        height: auto;
+        position: relative;
+        padding: 2rem 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        overflow: visible;
+        background: var(--bg-dark);
+        z-index: 100;
+    }
+
+    .right-section {
+        width: 100%;
+        padding: 2rem 1.2rem;
+        padding-bottom: 5rem;
+        box-sizing: border-box;
+        z-index: 1;
+    }
+
+    /* Hide canvas animations */
+    #profile-canvas,
+    #bg-canvas,
+    #loader-wrapper {
+        display: none !important;
+    }
+
+    .bg-overlay {
+        width: 100% !important;
+        left: 0 !important;
+        right: auto !important;
+        position: fixed !important;
+        backdrop-filter: none !important;
+        background: var(--bg-dark) !important;
+        z-index: -2 !important;
+    }
+
+    /* Force all content visible */
+    .fade-up,
+    .fade-up.delay-1,
+    .fade-up.delay-2,
+    .fade-up.delay-3 {
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+        visibility: visible !important;
+        transition: none !important;
+    }
+
+    .section {
+        min-height: auto !important;
+        padding: 3rem 0;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    .hero {
+        min-height: 60vh !important;
+    }
+
+    .mega-title {
+        font-size: 3rem !important;
+        white-space: normal !important;
+        word-wrap: break-word;
+        -webkit-text-fill-color: inherit !important;
+        background: none !important;
+        color: white !important;
+    }
+
+    .nav-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(15, 23, 42, 0.98);
+        padding: 0.6rem 0.5rem;
+        z-index: 2000;
+        top: auto;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .nav-links {
+        gap: 0.8rem;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: center;
+    }
+
+    .nav-item {
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+
+    .theme-toggle { display: none; }
+    
+    .left-section::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #0a0f1d 0%, #1e1b4b 50%, #312e81 100%);
+        z-index: -2;
+    }
+}
+
+/* Phones */
+@media (max-width: 600px) {
+    .mega-title {
+        font-size: 2.2rem !important;
+    }
+
     .chat-container {
         width: calc(100vw - 30px);
-        height: 400px;
+        height: 420px;
         bottom: 80px;
-        right: -5px;
-        border-radius: 15px;
+        right: 15px;
     }
-    
+
     .chatbot-widget {
         bottom: 20px;
         right: 20px;
+    }
+
+    .btn {
+        width: 100%;
+        margin-bottom: 0.8rem;
+        justify-content: center;
+    }
+}
+
+/* Small Phones */
+@media (max-width: 480px) {
+    .mega-title {
+        font-size: 1.8rem !important;
+    }
+
+    .left-section {
+        min-height: 45vh;
+    }
+
+    .nav-links {
+        gap: 0.5rem;
+    }
+
+    .nav-item {
+        font-size: 0.7rem;
     }
 }
