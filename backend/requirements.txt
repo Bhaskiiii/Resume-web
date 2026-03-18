@@ -1,9 +1,8 @@
 fastapi
 uvicorn
 motor
-pydantic[email]
 python-dotenv
-slowapi
+pydantic[email]
+python-jose[cryptography]
 python-multipart
-aiosqlite
-google-genai
+slowapi

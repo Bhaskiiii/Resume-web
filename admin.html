@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Bhaskar Gowda</title>
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="dark-theme">
+    <!-- Login Section -->
+    <div id="login-container" class="glass-panel">
+        <div class="login-box">
+            <h1>Admin Login</h1>
+            <form id="login-form">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="username" placeholder="Username" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn-primary">Login</button>
+                <p id="login-error" class="error-msg"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboard-container" style="display: none;">
+        <nav class="sidebar glass-panel">
+            <div class="sidebar-header">
+                <h2>Admin</h2>
+            </div>
+            <ul class="nav-links">
+                <li class="active" data-page="messages">
+                    <i class="fas fa-envelope"></i>
+                    <span>Messages</span>
+                </li>
+                <li data-page="chats">
+                    <i class="fas fa-comments"></i>
+                    <span>Chat History</span>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <button id="logout-btn" class="btn-outline">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </nav>
+
+        <main class="content">
+            <header class="top-bar">
+                <h1 id="page-title">Contact Messages</h1>
+                <div class="refresh-box">
+                    <button id="refresh-btn" class="btn-icon"><i class="fas fa-sync-alt"></i></button>
+                </div>
+            </header>
+            
+            <div id="data-display" class="glass-panel">
+                <div id="loading-spinner" class="spinner"></div>
+                <div id="table-container">
+                    <!-- Data tables injected here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
