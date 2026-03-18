@@ -7,3 +7,4 @@ python-jose[cryptography]
 python-multipart
 slowapi
 google-generativeai
+aiosqlite

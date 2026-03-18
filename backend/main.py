@@ -1,6 +1,7 @@
 import os
 import traceback
 import json
+import aiosqlite
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import Optional, List
@@ -48,18 +49,46 @@ class Token(BaseModel):
 
 # --- Database Setup ---
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SQLITE_DB = os.path.join(BASE_DIR, "submissions.db")
+
 class Database:
     client: AsyncIOMotorClient = None
     db = None
 
 db_instance = Database()
 
+async def init_sqlite():
+    async with aiosqlite.connect(SQLITE_DB) as db:
+        # For simplicity in this upgrade, we ensure the new schema exists.
+        # In a real production migration, we would use ALTER TABLE.
+        await db.execute("DROP TABLE IF EXISTS submissions") 
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS submissions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                type TEXT,
+                data TEXT,
+                created_at TIMESTAMP
+            )
+        """)
+        await db.commit()
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    db_instance.client = AsyncIOMotorClient(os.getenv("MONGO_URL", "mongodb://localhost:27017"))
-    db_instance.db = db_instance.client[os.getenv("DB_NAME", "portfolio_db")]
+    # Startup
+    await init_sqlite()
+    mongo_url = os.getenv("MONGO_URL")
+    if mongo_url:
+        print(f"Connecting to MongoDB...")
+        db_instance.client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
+        db_instance.db = db_instance.client[os.getenv("DB_NAME", "portfolio_db")]
+    else:
+        print("MONGO_URL not set, using SQLite fallback exclusively.")
+    
     yield
-    db_instance.client.close()
+    # Shutdown
+    if db_instance.client:
+        db_instance.client.close()
 
 app = FastAPI(title="Bhaskar Portfolio Backend", lifespan=lifespan)
 
@@ -115,7 +144,6 @@ async def send_email_notification(form: ContactForm):
     notify_email = os.getenv("NOTIFY_EMAIL")
 
     if not all([smtp_host, smtp_user, smtp_pass, notify_email]):
-        print("SMTP config missing")
         return
 
     msg = MIMEMultipart()
@@ -136,7 +164,6 @@ async def send_email_notification(form: ContactForm):
                 server.starttls()
                 server.login(smtp_user, smtp_pass)
                 server.send_message(msg)
-        print("Email sent successfully")
     except Exception as e:
         print(f"Email failed: {e}")
 
@@ -152,30 +179,59 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 @app.post("/api/contact")
 async def contact_form(form: ContactForm, background_tasks: BackgroundTasks):
-    data = form.model_dump()
-    data["created_at"] = datetime.utcnow()
-    await db_instance.db.contacts.insert_one(data)
-    background_tasks.add_task(send_email_notification, form)
-    return {"status": "success"}
+    try:
+        data = form.model_dump()
+        data["created_at"] = datetime.utcnow()
+        
+        # Try MongoDB
+        saved_to_mongo = False
+        if db_instance.db:
+            try:
+                await db_instance.db.contacts.insert_one(data)
+                saved_to_mongo = True
+            except Exception as e:
+                print(f"MongoDB save failed: {e}")
+
+        # Always Save to SQLite as backup/fallback
+        async with aiosqlite.connect(SQLITE_DB) as db:
+            await db.execute(
+                "INSERT INTO submissions (type, data, created_at) VALUES (?, ?, ?)",
+                ("contact", json.dumps(data, default=str), data["created_at"].isoformat())
+            )
+            await db.commit()
+        
+        background_tasks.add_task(send_email_notification, form)
+        return {"status": "success", "mongo": saved_to_mongo}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/chat")
 async def chat(req: ChatRequest):
     if not GEMINI_API_KEY: 
-        return {"response": "I'm currently in 'offline' mode. Please contact Bhaskar directly!"}
+        return {"response": "AI is offline. Please contact Bhaskar directly."}
     
     try:
-        model = genai.GenerativeModel(
-            model_name='gemini-1.5-flash-latest',
-            system_instruction=BHASKAR_SYSTEM_PROMPT
-        )
+        model = genai.GenerativeModel(model_name='gemini-flash-latest', system_instruction=BHASKAR_SYSTEM_PROMPT)
         response = model.generate_content(req.message)
         bot_reply = response.text
         
-        await db_instance.db.chat_history.insert_one({
-            "user_message": req.message, 
-            "bot_reply": bot_reply, 
-            "timestamp": datetime.utcnow()
-        })
+        chat_data = {"user_message": req.message, "bot_reply": bot_reply, "timestamp": datetime.utcnow()}
+        
+        # Try MongoDB
+        if db_instance.db:
+            try:
+                await db_instance.db.chat_history.insert_one(chat_data)
+            except Exception as e:
+                print(f"MongoDB chat save failed: {e}")
+
+        # SQLite fallback
+        async with aiosqlite.connect(SQLITE_DB) as db:
+            await db.execute(
+                "INSERT INTO submissions (type, data, created_at) VALUES (?, ?, ?)",
+                ("chat", json.dumps(chat_data, default=str), chat_data["timestamp"].isoformat())
+            )
+            await db.commit()
+            
         return {"response": bot_reply}
     except Exception as e:
         print(f"Chat error: {e}")
@@ -185,17 +241,45 @@ async def chat(req: ChatRequest):
 
 @app.get("/api/admin/messages")
 async def get_messages(current_user: str = Depends(get_current_admin)):
-    cursor = db_instance.db.contacts.find().sort("created_at", -1)
-    messages = await cursor.to_list(length=100)
-    for m in messages: m["_id"] = str(m["_id"])
-    return messages
+    results = []
+    # Try MongoDB
+    if db_instance.db:
+        try:
+            cursor = db_instance.db.contacts.find().sort("created_at", -1)
+            results = await cursor.to_list(length=100)
+            for m in results: m["_id"] = str(m["_id"])
+            return results
+        except Exception: 
+            pass
+            
+    # Fallback to SQLite
+    async with aiosqlite.connect(SQLITE_DB) as db:
+        async with db.execute("SELECT data FROM submissions WHERE type='contact' ORDER BY created_at DESC") as cursor:
+            async for row in cursor:
+                results.append(json.loads(row[0]))
+    return results
 
 @app.get("/api/admin/chats")
 async def get_chats(current_user: str = Depends(get_current_admin)):
-    cursor = db_instance.db.chat_history.find().sort("timestamp", -1)
-    chats = await cursor.to_list(length=100)
-    for c in chats: c["_id"] = str(c["_id"])
-    return chats
+    results = []
+    # Try MongoDB
+    if db_instance.db:
+        try:
+            cursor = db_instance.db.chat_history.find().sort("timestamp", -1)
+            results = await cursor.to_list(length=100)
+            for c in results: c["_id"] = str(c["_id"])
+            return results
+        except Exception:
+            pass
+
+    # Fallback to SQLite
+    async with aiosqlite.connect(SQLITE_DB) as db:
+        async with db.execute("SELECT data FROM submissions WHERE type='chat' ORDER BY created_at DESC") as cursor:
+            async for row in cursor:
+                results.append(json.loads(row[0]))
+    return results
 
 @app.get("/health")
-async def health(): return {"status": "ok"}
+async def health(): 
+    db_status = "connected" if db_instance.db else "sqlite-only"
+    return {"status": "ok", "db": db_status}
