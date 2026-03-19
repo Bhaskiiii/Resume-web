@@ -324,16 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('profile-canvas');
     const loader = document.getElementById('loader-wrapper');
 
-    // MOBILE GUARD: Skip heavy canvas animation on small screens
-    if (window.innerWidth <= 992) {
-        // Hide loader and canvas immediately on mobile
-        if (loader) {
-            loader.style.display = 'none';
-        }
-        if (canvas) {
-            canvas.style.display = 'none';
-        }
-    } else if (canvas) {
+    if (canvas) {
         const context = canvas.getContext('2d');
         const frameCount = 121;
         const frames = [];
@@ -425,8 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Scroll-Driven Background Animation (Right Panel) ---
     const bgCanvas = document.getElementById('bg-canvas');
 
-    // MOBILE GUARD: Completely skip background frame preloading on small screens
-    if (bgCanvas && window.innerWidth > 992) {
+    if (bgCanvas) {
         const bgContext = bgCanvas.getContext('2d');
         const bgFrameCount = 288;
         const bgFrames = [];
@@ -456,7 +446,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const renderBg = () => {
-            if (window.innerWidth <= 992) return;
 
             const html = document.documentElement;
             const progress = html.scrollTop / (html.scrollHeight - html.clientHeight);
@@ -486,9 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         window.addEventListener('scroll', () => {
-            if (window.innerWidth > 992) {
-                requestAnimationFrame(renderBg);
-            }
+            requestAnimationFrame(renderBg);
         });
 
         const debounce = (func, wait) => {
@@ -504,8 +491,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 100));
 
         setBgCanvasSize();
-    } else if (bgCanvas) {
-        // Hide bg-canvas on mobile
-        bgCanvas.style.display = 'none';
     }
 });
