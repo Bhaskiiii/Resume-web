@@ -49,6 +49,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Apply reveal to sections and cards
     document.querySelectorAll('.section, .glass-card, .fade-up, .skills-container, .projects-grid').forEach(el => {
+        // Skip elements inside chatbot
+        if (el.closest('#chatbot-widget')) return;
+        
         el.classList.add('fade-up');
         revealObserver.observe(el);
     });
@@ -73,14 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- Resume Download ---
-    const downloadBtn = document.getElementById('download-resume');
-    if (downloadBtn) {
-        downloadBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.print();
-        });
-    }
+    // The resume download is now handled directly by the link in index.html
 
     // --- Enhanced Form Validation ---
     function validateEmail(email) {
@@ -232,10 +228,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatMessages = document.getElementById('chat-messages');
     const suggestionBtns = document.querySelectorAll('.suggestion-btn');
 
-    const toggleChat = () => chatContainer.classList.toggle('active');
+    const chatbotWidget = document.getElementById('chatbot-widget');
+    const toggleChat = () => {
+        chatContainer.classList.toggle('active');
+        if (chatbotWidget) chatbotWidget.classList.toggle('active');
+    };
+
+    const closeChatWindow = () => {
+        chatContainer.classList.remove('active');
+        if (chatbotWidget) chatbotWidget.classList.remove('active');
+    };
 
     if (chatBubble) chatBubble.addEventListener('click', toggleChat);
-    if (closeChat) closeChat.addEventListener('click', toggleChat);
+    if (closeChat) closeChat.addEventListener('click', closeChatWindow);
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && chatContainer.classList.contains('active')) {
+            closeChatWindow();
+        }
+    });
 
     const addMessage = (text, sender) => {
         const msgDiv = document.createElement('div');
