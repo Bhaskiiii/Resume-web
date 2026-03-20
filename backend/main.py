@@ -13,7 +13,8 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr
 from dotenv import load_dotenv
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from jose import JWTError, jwt
 import smtplib
 from email.mime.text import MIMEText
@@ -138,8 +139,13 @@ async def get_current_admin(token: str = Depends(oauth2_scheme)):
 
 # --- AI & Email Helpers ---
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+client = None
 if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+    try:
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        print("✅ Gemini Client Initialized")
+    except Exception as e:
+        print(f"❌ Gemini Client Initialization Failed: {e}")
 
 BHASKAR_SYSTEM_PROMPT = """
 You are "Bhaskar's AI Assistant", representing Bhaskar Gowda A N (AIML Student & Full Stack Developer).
@@ -221,17 +227,29 @@ async def contact_form(form: ContactForm, background_tasks: BackgroundTasks):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/")
+async def root():
+    return {"status": "backend running"}
+
 @app.post("/api/chat")
-async def chat(req: ChatRequest):
-    if not GEMINI_API_KEY: 
-        return {"response": "AI is offline. Please contact Bhaskar directly."}
+async def chat(request: Request):
+    if not client:
+        return JSONResponse({"reply": "AI is offline. Please contact Bhaskar directly.", "response": "AI is offline. Please contact Bhaskar directly."})
     
     try:
-        model = genai.GenerativeModel(model_name='gemini-1.5-flash', system_instruction=BHASKAR_SYSTEM_PROMPT)
-        response = model.generate_content(req.message)
-        bot_reply = response.text
+        data = await request.json()
+        user_message = data.get("message", "")
         
-        chat_data = {"user_message": req.message, "bot_reply": bot_reply, "timestamp": datetime.utcnow()}
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=user_message,
+            config=types.GenerateContentConfig(
+                system_instruction=BHASKAR_SYSTEM_PROMPT,
+            )
+        )
+        reply = response.text
+        
+        chat_data = {"user_message": user_message, "bot_reply": reply, "timestamp": datetime.utcnow()}
         
         # Try MongoDB
         if db_instance.chats_collection is not None:
@@ -249,10 +267,10 @@ async def chat(req: ChatRequest):
             )
             await db.commit()
             
-        return {"response": bot_reply}
+        return JSONResponse({"reply": reply, "response": reply})
     except Exception as e:
-        print(f"Chat error: {e}")
-        return {"response": "Technical issue with AI. Please try again later."}
+        print("Chat error:", str(e))
+        return JSONResponse({"reply": "Server is waking up. Please try again.", "response": "Server is waking up. Please try again."})
 
 # --- Protected Admin Routes ---
 
